@@ -27,7 +27,7 @@ jobs:
       - name: Package (.vsix)
         run: bunx @vscode/vsce package --no-dependencies -o tempest-intellisuite.vsix
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: tempest-intellisuite-vsix
           path: tempest-intellisuite.vsix
