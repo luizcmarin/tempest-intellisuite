@@ -1,0 +1,165 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Tempest View",
+  "scopeName": "text.html.tempest",
+  "fileTypes": ["view.php"],
+  "injections": {
+    "L:text.html.tempest meta.tag - (meta.embedded, string.quoted, comment)": {
+      "comment": "Colors Tempest directive/expression attributes inside plain HTML tags handled by the included text.html.basic grammar.",
+      "patterns": [
+        { "include": "#directive-attribute" },
+        { "include": "#directive-attribute-bare" },
+        { "include": "#expression-attribute" }
+      ]
+    }
+  },
+  "patterns": [
+    { "include": "#php-block" },
+    { "include": "#interpolation-raw" },
+    { "include": "#interpolation" },
+    { "include": "#component-tag" },
+    { "include": "text.html.basic" }
+  ],
+  "repository": {
+    "php-block": {
+      "name": "meta.embedded.block.php",
+      "begin": "<\\?(?:php|=)?",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.php" }
+      },
+      "end": "\\?>",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.php" }
+      },
+      "contentName": "source.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "interpolation-raw": {
+      "comment": "Raw (unescaped) output: {!! $trusted !!}",
+      "name": "meta.embedded.expression.tempest",
+      "begin": "\\{!!",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.tempest.raw" }
+      },
+      "end": "!!\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.tempest.raw" }
+      },
+      "contentName": "source.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "interpolation": {
+      "comment": "Escaped output: {{ $value }}",
+      "name": "meta.embedded.expression.tempest",
+      "begin": "\\{\\{",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.tempest" }
+      },
+      "end": "\\}\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.tempest" }
+      },
+      "contentName": "source.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "component-tag": {
+      "comment": "View components: <x-button />, <x-slot name=\"…\" />, <x-component :is=\"…\" />, <x-template>",
+      "name": "meta.tag.component.tempest",
+      "begin": "(</?)((?:x|X)-[a-zA-Z][\\w:-]*)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.tempest" },
+        "2": { "name": "entity.name.tag.component.tempest support.class.component.tempest" }
+      },
+      "end": "(/?>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.end.tempest" }
+      },
+      "patterns": [{ "include": "#tag-stuff" }]
+    },
+    "tag-stuff": {
+      "patterns": [
+        { "include": "#directive-attribute" },
+        { "include": "#directive-attribute-bare" },
+        { "include": "#expression-attribute" },
+        { "include": "#plain-attribute" }
+      ]
+    },
+    "directive-attribute": {
+      "comment": "Control-flow directives with a PHP expression value: :if=\"…\", :elseif=\"…\", :isset=\"…\", :foreach=\"… as …\", :forelse, :as, :apply",
+      "begin": "(?<=\\s)(:(?:if|elseif|else|isset|foreach|forelse|as|apply))\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.directive.tempest" },
+        "2": { "name": "punctuation.separator.key-value.tempest" },
+        "3": { "name": "punctuation.definition.string.begin.tempest" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.tempest" }
+      },
+      "contentName": "source.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "directive-attribute-bare": {
+      "comment": "Valueless directives: <span :else>, <li :forelse>",
+      "match": "(?<=\\s)(:(?:else|forelse))(?=[\\s/>])",
+      "captures": {
+        "1": { "name": "keyword.control.directive.tempest" }
+      }
+    },
+    "expression-attribute": {
+      "comment": "Expression attributes — any :attribute=\"…\" evaluates as PHP (e.g. :value=\"$value\", :is=\"$name\")",
+      "begin": "(?<=\\s)(:[a-zA-Z][\\w-]*)\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.expression.tempest" },
+        "2": { "name": "punctuation.separator.key-value.tempest" },
+        "3": { "name": "punctuation.definition.string.begin.tempest" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.tempest" }
+      },
+      "contentName": "source.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "plain-attribute": {
+      "patterns": [
+        {
+          "match": "(?<=\\s)([a-zA-Z][\\w-]*)(?=[\\s=/>])",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.html" }
+          }
+        },
+        {
+          "name": "string.quoted.double.html",
+          "begin": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.html" }
+          },
+          "patterns": [
+            { "include": "#interpolation-raw" },
+            { "include": "#interpolation" }
+          ]
+        },
+        {
+          "name": "string.quoted.single.html",
+          "begin": "'",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "end": "'",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.html" }
+          }
+        },
+        {
+          "match": "=",
+          "name": "punctuation.separator.key-value.html"
+        }
+      ]
+    }
+  }
+}

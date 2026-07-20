@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%namespace%%;
+
+use Tempest\Core\Environment;
+use Tempest\Http\Request;
+use Tempest\Http\Response;
+use Tempest\Router\HttpMiddleware;
+use Tempest\Router\HttpMiddlewareCallable;
+use Tempest\Support\Priority;
+
+use function Tempest\internal_storage_path;
+
+/**
+ * Records request timings for the Tempest IntelliSuite Lens.
+ *
+ * This file was written into your project by the extension, because the
+ * framework has no request-lifecycle event to hook into. It is yours: read it,
+ * change it, or delete it.
+ *
+ * To remove it: delete this file, or run "Tempest: Remove Lens Collectors".
+ *
+ * It is inert outside the local environment, and every failure is swallowed —
+ * measuring a request must never be able to break it.
+ */
+#[Priority(Priority::FRAMEWORK)]
+final readonly class %%class%% implements HttpMiddleware
+{
+    public function __construct(
+        private Environment $environment,
+    ) {}
+
+    public function __invoke(Request $request, HttpMiddlewareCallable $next): Response
+    {
+        if (! $this->environment->isLocal()) {
+            return $next($request);
+        }
+
+        $startedAt = hrtime(as_number: true);
+
+        $response = $next($request);
+
+        try {
+            $path = internal_storage_path('intellisuite', 'requests.jsonl');
+
+            if (! is_dir(dirname($path))) {
+                @mkdir(dirname($path), 0o775, recursive: true);
+            }
+
+            @file_put_contents(
+                $path,
+                json_encode([
+                    'at' => (new \DateTimeImmutable())->format('c'),
+                    'method' => $request->method->value,
+                    'uri' => $request->uri,
+                    'status' => $response->status->value,
+                    'durationMs' => round((hrtime(as_number: true) - $startedAt) / 1_000_000, 3),
+                    'memoryMb' => round(memory_get_peak_usage(real_usage: true) / 1_048_576, 2),
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL,
+                FILE_APPEND,
+            );
+        } catch (\Throwable) {
+            // Never let instrumentation take the application down with it.
+        }
+
+        return $response;
+    }
+}

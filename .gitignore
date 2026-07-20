@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# esbuild bundle (the extension `main`; rebuilt by `bun run build:bundle`)
+build/
+
+# Packaged artifacts
+*.vsix
+
+# OS / editors
+.DS_Store
+Thumbs.db
+*.swp

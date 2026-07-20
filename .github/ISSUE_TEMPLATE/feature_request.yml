@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest something the extension should do
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: the panel features are being built in order — Inspector, Lens, Forge,
+        project-aware IntelliSense. Check the roadmap in the README to see whether yours is already
+        planned.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is hard today
+      description: Describe the friction rather than the solution — it often has a better answer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      description: The extension installs nothing in your project and makes no network requests.
+      options:
+        - label: This can work without adding a package or any code to the user's project
+        - label: This needs code in the project, and would have to be opt-in

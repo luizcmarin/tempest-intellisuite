@@ -1,0 +1,721 @@
+/*
+ * Panel styling for the Workbench and everything it renders.
+ *
+ * Every colour goes through a `--ui-*` token rather than being read from a
+ * VS Code variable at the point of use, so the mapping from "role" to "editor
+ * variable" is stated once, here, instead of as fallback chains scattered
+ * through the file. The panel always wears the editor's theme — high-contrast
+ * themes included; the header's theme button switches the editor itself.
+ */
+
+/*
+ * The `hidden` attribute only carries `display: none` from the UA stylesheet,
+ * which any `display` rule of ours outranks — a hidden `.tabs` would stay on
+ * screen because it is `display: flex`. Every panel here toggles visibility
+ * through `hidden`, so it has to win outright.
+ */
+[hidden] {
+	display: none !important;
+}
+
+body {
+	--ui-bg: var(--vscode-editor-background);
+	--ui-fg: var(--vscode-foreground);
+	--ui-muted: var(--vscode-descriptionForeground);
+	--ui-border: var(--vscode-panel-border, var(--vscode-editorWidget-border));
+	--ui-accent: var(--vscode-focusBorder);
+	--ui-hover: var(--vscode-list-hoverBackground);
+	--ui-selection-bg: var(--vscode-list-activeSelectionBackground);
+	--ui-selection-fg: var(--vscode-list-activeSelectionForeground);
+	--ui-toolbar-hover: var(--vscode-toolbar-hoverBackground);
+
+	--ui-button-bg: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
+	--ui-button-fg: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+	--ui-button-hover: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-hoverBackground));
+
+	--ui-input-bg: var(--vscode-input-background);
+	--ui-input-fg: var(--vscode-input-foreground);
+	--ui-input-border: var(--vscode-input-border, transparent);
+
+	--ui-badge-bg: var(--vscode-badge-background);
+	--ui-badge-fg: var(--vscode-badge-foreground);
+
+	--ui-link: var(--vscode-textLink-foreground);
+	--ui-link-hover: var(--vscode-textLink-activeForeground);
+
+	--ui-error: var(--vscode-editorError-foreground);
+	--ui-warning: var(--vscode-editorWarning-foreground);
+	--ui-warning-bg: var(--vscode-inputValidation-warningBackground, transparent);
+	--ui-error-bg: var(--vscode-inputValidation-errorBackground, var(--vscode-badge-background));
+
+	--ui-blue: var(--vscode-charts-blue, #4fc1ff);
+	--ui-green: var(--vscode-charts-green, #89d185);
+	--ui-yellow: var(--vscode-charts-yellow, #e2c08d);
+	--ui-red: var(--vscode-charts-red, #f48771);
+
+	--ui-mono: var(--vscode-editor-font-family);
+
+	margin: 0;
+	padding: 0 1rem 2rem;
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	color: var(--ui-fg);
+	background: var(--ui-bg);
+}
+
+/* Sidebar geometry -------------------------------------------------------- */
+
+/*
+ * The Workbench renders in the activity bar sidebar, which is around 300px and
+ * resizable down to much less. Nothing here may assume horizontal room: the
+ * project summary is a vertical list and list rows stack.
+ */
+body.sidebar {
+	padding: 0 0.75rem 1.5rem;
+	font-size: 0.92em;
+}
+
+/* Header ----------------------------------------------------------------- */
+
+header {
+	position: sticky;
+	top: 0;
+	padding: 0.75rem 0 0.5rem;
+	background: var(--ui-bg);
+	z-index: 1;
+}
+
+/* One fact per line, as in a properties list. */
+.summary {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	font-size: 0.9em;
+	color: var(--ui-muted);
+}
+
+.summary > span {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+
+.summary b {
+	color: var(--ui-fg);
+	font-weight: 600;
+	text-align: right;
+	word-break: break-word;
+}
+
+/* The two header buttons: Refresh and theme. Nothing else belongs here. */
+.actions {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	margin-top: 0.6rem;
+}
+
+/* Reads as the value it replaces, not as a form control dropped into a header. */
+.project-picker {
+	max-width: 60%;
+	padding: 0 0.15rem;
+	font: inherit;
+	font-weight: 600;
+	color: var(--ui-fg);
+	background: none;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.project-picker:hover {
+	border-color: var(--ui-border);
+	background: var(--ui-input-bg);
+}
+
+.project-picker:focus-visible {
+	outline: 1px solid var(--ui-accent);
+}
+
+.divider {
+	height: 0;
+	margin: 0 0 0.75rem;
+	border: none;
+	border-top: 1px solid var(--ui-border);
+}
+
+/*
+ * Clearing the discovery cache hangs off the fact that prompted it, rather than
+ * adding a fourth button to a row meant for three.
+ */
+.inline-action {
+	padding: 0 0.35rem;
+	font-size: 0.8em;
+	line-height: 1.5;
+	background: var(--ui-button-bg);
+	color: var(--ui-button-fg);
+	border-radius: 3px;
+}
+
+button {
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--ui-button-fg);
+	background: var(--ui-button-bg);
+	border: none;
+	border-radius: 2px;
+	padding: 0.35rem 0.8rem;
+	cursor: pointer;
+}
+
+button:hover {
+	background: var(--ui-button-hover);
+}
+
+button:focus-visible {
+	outline: 1px solid var(--ui-accent);
+	outline-offset: 2px;
+}
+
+/*
+ * Icon-only header buttons. Codicons are not available inside a webview, so the
+ * glyphs are inline SVG authored here — never built from project data.
+ */
+.icon-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	padding: 0;
+	background: none;
+	color: var(--ui-muted);
+	border-radius: 3px;
+}
+
+.icon-button:hover {
+	background: var(--ui-toolbar-hover);
+	color: var(--ui-fg);
+}
+
+.icon-button svg {
+	width: 1rem;
+	height: 1rem;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* Codicons are drawn as filled shapes, so they opt out of the stroke above. */
+.icon-button svg.icon-solid {
+	fill: currentColor;
+	stroke: none;
+}
+
+/*
+ * The button offers the theme you are not in, so a dark editor shows the sun.
+ * `data-dark` is stamped on the body by the host and kept in step with the
+ * editor's own colour theme.
+ */
+.icon-to-dark,
+.icon-to-light {
+	display: none;
+}
+
+body:not([data-dark]) .icon-to-dark,
+body[data-dark] .icon-to-light {
+	display: block;
+}
+
+.problems {
+	padding: 0.6rem 0.8rem;
+	margin-bottom: 0.75rem;
+	border-left: 3px solid var(--ui-warning);
+	background: var(--ui-warning-bg);
+	color: var(--ui-fg);
+	font-size: 0.9em;
+}
+
+.problems p {
+	margin: 0.2rem 0;
+}
+
+/* Tabs ------------------------------------------------------------------- */
+
+.tabs {
+	display: flex;
+	gap: 0.1rem;
+	border-bottom: 1px solid var(--ui-border);
+	margin-bottom: 0.75rem;
+	/* The Lens's four sub-tabs do not fit 300px; scrolling beats wrapping,
+	   which would push the content down by a whole row. */
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+	display: none;
+}
+
+/*
+ * The Lens's own tabs sit one level down, so they read as a subdivision of the
+ * tab above rather than a competing row: lighter, tighter, no hard rule under
+ * them.
+ */
+.tabs.sub {
+	border-bottom: none;
+	margin: -0.25rem 0 0.5rem;
+	padding-left: 0.5rem;
+	font-size: 0.92em;
+}
+
+.tabs.sub .tab {
+	padding: 0.3rem 0.7rem;
+	border-bottom-width: 1px;
+}
+
+.tab {
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	padding: 0.4rem 0.55rem;
+	color: var(--ui-muted);
+	white-space: nowrap;
+}
+
+.tab:hover {
+	background: var(--ui-toolbar-hover);
+}
+
+.tab[aria-selected='true'] {
+	color: var(--ui-fg);
+	border-bottom-color: var(--ui-accent);
+}
+
+.filter {
+	width: 100%;
+	box-sizing: border-box;
+	margin-bottom: 0.75rem;
+	padding: 0.4rem 0.6rem;
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--ui-input-fg);
+	background: var(--ui-input-bg);
+	border: 1px solid var(--ui-input-border);
+	border-radius: 2px;
+}
+
+.filter:focus {
+	outline: 1px solid var(--ui-accent);
+}
+
+/* The Lens keeps its stream controls in a strip of its own, under the tabs. */
+.strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 0.6rem;
+	align-items: center;
+	margin-bottom: 0.75rem;
+}
+
+.strip .filter {
+	flex: 1 1 100%;
+	margin-bottom: 0;
+}
+
+.strip .status {
+	flex: 1 1 100%;
+	font-size: 0.8em;
+	color: var(--ui-muted);
+}
+
+/* Rows ------------------------------------------------------------------- */
+
+/*
+ * Rows stack instead of tabulating: at sidebar width a columned table turns
+ * every handler name into a two-character sliver. The first line carries what
+ * identifies the row, the rest sits under it.
+ */
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.2rem 0.5rem;
+	padding: 0.35rem 0.4rem;
+	border-radius: 3px;
+}
+
+.row:hover {
+	background: var(--ui-hover);
+}
+
+.row.clickable {
+	cursor: pointer;
+}
+
+.row.clickable:focus-visible {
+	outline: 1px solid var(--ui-accent);
+}
+
+.method {
+	flex: 0 0 auto;
+	font-family: var(--ui-mono);
+	font-size: 0.8em;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+
+/* Distinct hues per verb, taken from the palette's chart colours so they stay
+   legible in every mode. */
+.method-GET { color: var(--ui-blue); }
+.method-POST { color: var(--ui-green); }
+.method-PUT,
+.method-PATCH { color: var(--ui-yellow); }
+.method-DELETE { color: var(--ui-red); }
+
+.uri {
+	font-family: var(--ui-mono);
+	flex: 1 1 auto;
+	min-width: 0;
+	word-break: break-all;
+}
+
+/* Secondary detail always starts its own line, full width, under the name. */
+.handler,
+.description {
+	flex: 1 0 100%;
+	color: var(--ui-muted);
+	font-size: 0.85em;
+	word-break: break-all;
+}
+
+.name {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: var(--ui-mono);
+	word-break: break-all;
+}
+
+.badge {
+	font-size: 0.75em;
+	padding: 0.05rem 0.35rem;
+	border-radius: 2px;
+	background: var(--ui-badge-bg);
+	color: var(--ui-badge-fg);
+}
+
+/*
+ * Reveal-on-hover is a mouse idiom, and a sidebar row is narrow enough that a
+ * permanently visible button would crowd the name. Keyboard users get it via
+ * focus-within; it stays in the layout either way, so nothing shifts.
+ */
+.run {
+	flex: 0 0 auto;
+	padding: 0.1rem 0.45rem;
+	font-size: 0.8em;
+	visibility: hidden;
+}
+
+.row:hover .run,
+.row:focus-within .run {
+	visibility: visible;
+}
+
+.btn-small {
+	padding: 0.2rem 0.55rem;
+	font-size: 0.85em;
+}
+
+.group {
+	margin: 1rem 0 0.3rem;
+	font-size: 0.75em;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ui-muted);
+}
+
+/*
+ * Feature heading over a block of routes.
+ *
+ * Overrides the uppercasing of `.group` — the text is a PHP namespace, and
+ * `APP\CATEGORIES` names nothing. It earns the accent instead: at sidebar width
+ * the headings are the only thing giving the list a shape, so they have to read
+ * as structure rather than as another muted row.
+ */
+.group.namespace {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 1.1rem 0 0.35rem;
+	padding-bottom: 0.25rem;
+	border-bottom: 1px solid var(--ui-border);
+	font-size: 0.85em;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--ui-accent);
+}
+
+/* The first heading sits at the top of the panel and needs no air above it. */
+.group.namespace:first-child {
+	margin-top: 0.25rem;
+}
+
+.empty {
+	padding: 2rem 0.5rem;
+	text-align: center;
+	color: var(--ui-muted);
+}
+
+/* Shown in place of the tabs when no Tempest project was detected. */
+.welcome {
+	padding: 0.5rem 0 1rem;
+	font-size: 0.9em;
+	line-height: 1.5;
+}
+
+.welcome p {
+	margin: 0 0 0.75rem;
+}
+
+.welcome button {
+	display: block;
+	width: 100%;
+	margin-bottom: 0.4rem;
+}
+
+body.loading .panel {
+	opacity: 0.5;
+}
+
+/* Lens ------------------------------------------------------------------- */
+
+.toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.9em;
+	white-space: nowrap;
+	color: var(--ui-muted);
+}
+
+.entry {
+	border-left: 2px solid var(--ui-border);
+	padding: 0.35rem 0 0.35rem 0.6rem;
+	margin-bottom: 0.5rem;
+}
+
+.entry-head {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	font-size: 0.85em;
+	color: var(--ui-muted);
+	margin-bottom: 0.2rem;
+}
+
+.entry-body {
+	margin: 0;
+	font-family: var(--ui-mono);
+	font-size: var(--vscode-editor-font-size);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.link {
+	background: none;
+	border: none;
+	padding: 0;
+	font-family: var(--ui-mono);
+	font-size: inherit;
+	color: var(--ui-link);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.link:hover {
+	color: var(--ui-link-hover);
+}
+
+.level {
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+
+.level-WARNING { border-left-color: var(--ui-warning); }
+.level-WARNING .level { color: var(--ui-warning); }
+
+.level-ERROR,
+.level-CRITICAL,
+.level-ALERT,
+.level-EMERGENCY { border-left-color: var(--ui-error); }
+
+.level-ERROR .level,
+.level-CRITICAL .level,
+.level-ALERT .level,
+.level-EMERGENCY .level { color: var(--ui-error); }
+
+.level-INFO .level { color: var(--ui-blue); }
+
+/* Lens metrics ----------------------------------------------------------- */
+
+.metrics {
+	gap: 1.25rem;
+	padding: 0.5rem 0 0.75rem;
+	border-bottom: 1px solid var(--ui-border);
+	margin-bottom: 0.75rem;
+}
+
+.bindings {
+	color: var(--ui-muted);
+	font-size: 0.9em;
+	margin-top: 0.2rem;
+}
+
+.optin {
+	max-width: 46rem;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.optin p {
+	margin-bottom: 1rem;
+	line-height: 1.5;
+}
+
+/* Todos ------------------------------------------------------------------ */
+
+/*
+ * The tag is the only coloured thing in the row: what a `FIXME` says matters
+ * more than that it is one, so the text keeps the foreground colour and the
+ * tag itself is what the eye scans down.
+ */
+.tag {
+	flex: 0 0 auto;
+	font-family: var(--ui-mono);
+	font-size: 0.75em;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+
+.tag-TODO { color: var(--ui-blue); }
+.tag-NOTE { color: var(--ui-green); }
+.tag-HACK,
+.tag-XXX { color: var(--ui-yellow); }
+.tag-FIXME,
+.tag-BUG { color: var(--ui-red); }
+
+.todo-text {
+	flex: 1 1 100%;
+	min-width: 0;
+	line-height: 1.4;
+	/* Wraps between words, and only breaks one when a word is wider than the
+	   sidebar — a path pasted into a note, usually. */
+	overflow-wrap: anywhere;
+}
+
+.line-number {
+	flex: 0 0 auto;
+	font-family: var(--ui-mono);
+	font-size: 0.8em;
+	color: var(--ui-muted);
+}
+
+/* Health ----------------------------------------------------------------- */
+
+/*
+ * A tab that reports a problem has to say so from the tab strip, since that is
+ * the only part of the panel visible while someone works in another one.
+ */
+.tab.has-error {
+	color: var(--ui-error);
+}
+
+.tab.has-warning {
+	color: var(--ui-warning);
+}
+
+.tab.has-error .badge {
+	background: var(--ui-error);
+	color: var(--vscode-editor-background);
+}
+
+.health-score {
+	margin-bottom: 0.5rem;
+}
+
+/* One verdict, in the tone the worst check earns. */
+.score {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	padding: 0.6rem 0.75rem;
+	border-left: 3px solid var(--ui-border);
+	font-size: 0.9em;
+	line-height: 1.4;
+}
+
+.score span {
+	color: var(--ui-muted);
+	font-size: 0.9em;
+}
+
+.score-ok { border-left-color: var(--ui-green); }
+.score-warning { border-left-color: var(--ui-warning); }
+.score-error { border-left-color: var(--ui-error); }
+
+.check {
+	padding: 0.45rem 0.5rem 0.5rem;
+	border-bottom: 1px solid var(--ui-border);
+}
+
+.check-head {
+	display: flex;
+	align-items: baseline;
+	gap: 0.45rem;
+}
+
+/*
+ * Shape as well as colour. A status told in colour alone is not told at all to
+ * a good share of the people reading it, and this panel wears whatever theme
+ * the editor does — including high contrast.
+ */
+.marker {
+	flex: 0 0 auto;
+	font-size: 0.85em;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.check-ok .marker { color: var(--ui-green); }
+.check-warning .marker { color: var(--ui-warning); }
+.check-error .marker { color: var(--ui-error); }
+
+.check-label {
+	font-weight: 600;
+}
+
+.check-detail {
+	display: block;
+	margin-top: 0.15rem;
+	padding-left: 1.1rem;
+	font-size: 0.88em;
+	color: var(--ui-muted);
+	word-break: break-word;
+}
+
+/* The advice is prose, so it gets the line height prose needs. */
+.check-advice {
+	margin: 0.35rem 0 0;
+	padding-left: 1.1rem;
+	font-size: 0.88em;
+	line-height: 1.5;
+}
+
+.check .btn-small {
+	margin: 0.45rem 0 0 1.1rem;
+}

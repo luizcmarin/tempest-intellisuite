@@ -1,0 +1,51 @@
+name: Bug report
+description: Something is not working as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The extension log is the single most useful thing you can attach —
+        run **Tempest: Show Extension Log** from the command palette; it records every console
+        command the extension ran and why anything failed.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a Tempest project
+        2. …
+    validations:
+      required: true
+
+  - type: input
+    id: tempest-version
+    attributes:
+      label: Tempest version
+      description: Output of `./tempest about` (the version line is enough).
+    validations:
+      required: true
+
+  - type: input
+    id: vscode-version
+    attributes:
+      label: VS Code version and OS
+      placeholder: "1.95.0 · Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Extension log
+      description: Relevant output from the Tempest IntelliSuite output channel.
+      render: shell

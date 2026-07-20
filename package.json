@@ -1,0 +1,357 @@
+{
+  "name": "tempest-intellisuite",
+  "displayName": "Tempest PHP IntelliSuite",
+  "description": "The Tempest development ecosystem inside VS Code: .view.php highlighting, Discovery attribute completions, autowiring hints — and a dev panel that maps your routes, commands and logs without installing anything in your project.",
+  "version": "1.10.0",
+  "publisher": "LuizMarin",
+  "icon": "tempest-intellisuite.png",
+  "license": "MIT",
+  "author": {
+    "name": "Luiz Marin",
+    "url": "https://github.com/luizcmarin",
+    "email": "luizcmarin@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luizcmarin/tempest-intellisuite"
+  },
+  "bugs": {
+    "url": "https://github.com/luizcmarin/tempest-intellisuite/issues"
+  },
+  "homepage": "https://github.com/luizcmarin/tempest-intellisuite#readme",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "php",
+    "tempest",
+    "tempestphp",
+    "framework",
+    "views",
+    "discovery",
+    "attributes"
+  ],
+  "galleryBanner": {
+    "color": "#0C1118",
+    "theme": "dark"
+  },
+  "main": "./build/extension.js",
+  "activationEvents": [
+    "onLanguage:php",
+    "workspaceContains:tempest"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "tempest-view",
+        "aliases": [
+          "Tempest View",
+          "tempest-view"
+        ],
+        "extensions": [
+          ".view.php"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tempest-view",
+        "scopeName": "text.html.tempest",
+        "path": "./syntaxes/tempest-view.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.php": "php",
+          "meta.embedded.block.php": "php",
+          "meta.embedded.expression.tempest": "php"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "php",
+        "path": "./snippets/tempest-php.json"
+      },
+      {
+        "language": "tempest-view",
+        "path": "./snippets/tempest-view.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "tempest.openWorkbench",
+        "title": "Open Panel",
+        "category": "Tempest",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "tempest.openInspector",
+        "title": "Open Panel: Routes",
+        "category": "Tempest",
+        "icon": "$(telescope)"
+      },
+      {
+        "command": "tempest.openLens",
+        "title": "Open Panel: Lens",
+        "category": "Tempest",
+        "icon": "$(inspect)"
+      },
+      {
+        "command": "tempest.openHealth",
+        "title": "Open Panel: Health",
+        "category": "Tempest",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "tempest.closeTag",
+        "title": "Close Current Tag",
+        "category": "Tempest"
+      },
+      {
+        "command": "tempest.installCollectors",
+        "title": "Install Lens Collectors",
+        "category": "Tempest"
+      },
+      {
+        "command": "tempest.removeCollectors",
+        "title": "Remove Lens Collectors",
+        "category": "Tempest"
+      },
+      {
+        "command": "tempest.showOutput",
+        "title": "Show Extension Log",
+        "category": "Tempest"
+      },
+      {
+        "command": "tempest.refresh",
+        "title": "Refresh Project Data",
+        "category": "Tempest",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tempest",
+          "title": "Tempest",
+          "icon": "media/activitybar.svg"
+        }
+      ]
+    },
+    "views": {
+      "tempest": [
+        {
+          "type": "webview",
+          "id": "tempest.workbench",
+          "name": "Project",
+          "icon": "media/activitybar.svg"
+        }
+      ]
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "tempest.openWorkbench",
+          "when": "tempest.isTempestProject"
+        },
+        {
+          "command": "tempest.openInspector",
+          "when": "tempest.isTempestProject"
+        },
+        {
+          "command": "tempest.openLens",
+          "when": "tempest.isTempestProject"
+        },
+        {
+          "command": "tempest.openHealth",
+          "when": "tempest.isTempestProject"
+        },
+        {
+          "command": "tempest.installCollectors",
+          "when": "tempest.isTempestProject"
+        },
+        {
+          "command": "tempest.removeCollectors",
+          "when": "tempest.isTempestProject"
+        },
+        {
+          "command": "tempest.refresh",
+          "when": "tempest.isTempestProject"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Tempest PHP IntelliSuite",
+      "properties": {
+        "tempest.phpPath": {
+          "type": "string",
+          "default": "php",
+          "markdownDescription": "Path to the PHP executable used to run the `tempest` console. Defaults to `php` on your PATH.",
+          "scope": "machine-overridable"
+        },
+        "tempest.consolePath": {
+          "type": "string",
+          "default": "tempest",
+          "markdownDescription": "Name of the Tempest console executable. Every workspace folder is searched for it at any depth, so projects nested in a monorepo are found without configuration. Set a path (relative to the workspace folder) to add a project the search cannot see.",
+          "scope": "resource"
+        },
+        "tempest.cli.timeout": {
+          "type": "number",
+          "default": 15000,
+          "minimum": 1000,
+          "markdownDescription": "How long to wait, in milliseconds, before giving up on a `tempest` command.",
+          "scope": "resource"
+        },
+        "tempest.lens.notifyOnError": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Show a notification when the application logs at `ERROR` level or above. The Lens keeps collecting either way.",
+          "scope": "resource"
+        },
+        "tempest.lens.historyMinutes": {
+          "type": "number",
+          "default": 60,
+          "minimum": 0,
+          "markdownDescription": "How far back the Lens loads when it opens, in minutes. The application log keeps a whole day of entries, so without a window the panel shows failures that were fixed hours ago as though they had just happened. Set to `0` to load the entire log. Live activity is never filtered.",
+          "scope": "resource"
+        },
+        "tempest.todo.tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "TODO",
+            "FIXME",
+            "HACK",
+            "BUG",
+            "NOTE",
+            "XXX"
+          ],
+          "markdownDescription": "Words the Todos tab looks for. A word only counts when a comment marker precedes it on the line, so `TODO` inside a string or a URL is not reported.",
+          "scope": "resource"
+        },
+        "tempest.todo.include": {
+          "type": "string",
+          "default": "**/*.{php,js,mjs,ts,tsx,jsx,css,scss,md,sql,sh,yaml,yml,json}",
+          "markdownDescription": "Which files the Todos tab scans, as a glob relative to the project root. `vendor`, `node_modules`, build output and `.tempest` are always skipped.",
+          "scope": "resource"
+        },
+        "tempest.view.autoCloseTags": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Insert the matching closing tag when you finish an opening tag in a `.view.php` file. VS Code's built-in HTML behaviour does not reach these files, because they have their own language id.",
+          "scope": "resource"
+        },
+        "tempest.completions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suggest Discovery attributes and constructor autowiring hints while typing.",
+          "scope": "resource"
+        }
+      }
+    },
+    "configurationDefaults": {
+      "emmet.includeLanguages": {
+        "tempest-view": "html"
+      },
+      "editor.tokenColorCustomizations": {
+        "comments": "Tempest View accent colors — scoped to the extension's own TextMate scopes, so they layer on top of any theme without affecting other files. Override in your settings under editor.tokenColorCustomizations.textMateRules.",
+        "[*Dark*]": {
+          "textMateRules": [
+            {
+              "scope": "entity.name.tag.component.tempest",
+              "settings": {
+                "foreground": "#b39dff",
+                "fontStyle": "bold"
+              }
+            },
+            {
+              "scope": "punctuation.definition.tag.begin.tempest, punctuation.definition.tag.end.tempest",
+              "settings": {
+                "foreground": "#8a7bd8"
+              }
+            },
+            {
+              "scope": "keyword.control.directive.tempest",
+              "settings": {
+                "foreground": "#6cc0ff",
+                "fontStyle": "bold italic"
+              }
+            },
+            {
+              "scope": "entity.other.attribute-name.expression.tempest",
+              "settings": {
+                "foreground": "#5fd3bd",
+                "fontStyle": "italic"
+              }
+            },
+            {
+              "scope": "punctuation.section.embedded.begin.tempest, punctuation.section.embedded.end.tempest, punctuation.section.embedded.begin.tempest.raw, punctuation.section.embedded.end.tempest.raw",
+              "settings": {
+                "foreground": "#e0af68",
+                "fontStyle": "bold"
+              }
+            }
+          ]
+        },
+        "[*Light*]": {
+          "textMateRules": [
+            {
+              "scope": "entity.name.tag.component.tempest",
+              "settings": {
+                "foreground": "#6b4fd8",
+                "fontStyle": "bold"
+              }
+            },
+            {
+              "scope": "punctuation.definition.tag.begin.tempest, punctuation.definition.tag.end.tempest",
+              "settings": {
+                "foreground": "#7a68c8"
+              }
+            },
+            {
+              "scope": "keyword.control.directive.tempest",
+              "settings": {
+                "foreground": "#1e73c4",
+                "fontStyle": "bold italic"
+              }
+            },
+            {
+              "scope": "entity.other.attribute-name.expression.tempest",
+              "settings": {
+                "foreground": "#0f8a72",
+                "fontStyle": "italic"
+              }
+            },
+            {
+              "scope": "punctuation.section.embedded.begin.tempest, punctuation.section.embedded.end.tempest, punctuation.section.embedded.begin.tempest.raw, punctuation.section.embedded.end.tempest.raw",
+              "settings": {
+                "foreground": "#b8860b",
+                "fontStyle": "bold"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build:bundle": "bun build.js",
+    "typecheck": "tsc --noEmit",
+    "package": "bun build.js && mkdir -p ../dist && vsce package --no-dependencies -o ../dist/",
+    "publish:marketplace": "bun build.js && vsce publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.3.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}

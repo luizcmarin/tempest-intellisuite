@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%namespace%%;
+
+use Tempest\Core\Environment;
+use Tempest\Database\QueryExecuted;
+use Tempest\EventBus\EventHandler;
+
+use function Tempest\internal_storage_path;
+
+/**
+ * Records executed queries for the Tempest IntelliSuite Lens.
+ *
+ * This file was written into your project by the extension, because the
+ * framework emits query timings as an in-memory event and something has to be
+ * listening. It is yours: read it, change it, or delete it.
+ *
+ * To remove it: delete this file, or run "Tempest: Remove Lens Collectors".
+ *
+ * It is inert outside the local environment, and every failure is swallowed —
+ * collecting debug data must never be able to break a request.
+ */
+final readonly class %%class%%
+{
+    public function __construct(
+        private Environment $environment,
+    ) {}
+
+    #[EventHandler]
+    public function onQueryExecuted(QueryExecuted $query): void
+    {
+        if (! $this->environment->isLocal()) {
+            return;
+        }
+
+        try {
+            $path = internal_storage_path('intellisuite', 'queries.jsonl');
+
+            if (! is_dir(dirname($path))) {
+                @mkdir(dirname($path), 0o775, recursive: true);
+            }
+
+            @file_put_contents(
+                $path,
+                json_encode([
+                    'at' => (new \DateTimeImmutable())->format('c'),
+                    'sql' => $query->sql,
+                    'bindings' => array_map(
+                        static fn (mixed $binding): mixed => is_scalar($binding) || $binding === null
+                            ? $binding
+                            : get_debug_type($binding),
+                        $query->bindings,
+                    ),
+                    'durationMs' => round($query->durationMs, 3),
+                    'type' => $query->queryType,
+                    'failed' => $query->failed,
+                    'slow' => $query->isSlow(),
+                    'connection' => is_string($query->connectionName) ? $query->connectionName : null,
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL,
+                FILE_APPEND,
+            );
+        } catch (\Throwable) {
+            // Never let instrumentation take the application down with it.
+        }
+    }
+}

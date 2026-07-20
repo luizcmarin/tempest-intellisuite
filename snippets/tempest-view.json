@@ -1,0 +1,37 @@
+{
+  "Tempest foreach": {
+    "prefix": ":foreach",
+    "body": [
+      "<${1:li} :foreach=\"\\$${2:items} as \\$${3:item}\">{{ \\$${3:item} }}</${1:li}>",
+      "<${1:li} :forelse>${4:Nothing here yet.}</${1:li}>"
+    ],
+    "description": "Loop with empty state (:foreach + :forelse)"
+  },
+  "Tempest if/else": {
+    "prefix": ":if",
+    "body": [
+      "<${1:span} :if=\"${2:\\$condition}\">${3}</${1:span}>",
+      "<${1:span} :else>${4}</${1:span}>"
+    ],
+    "description": "Conditional rendering (:if + :else)"
+  },
+  "Tempest template wrapper": {
+    "prefix": "x-template",
+    "body": [
+      "<x-template :foreach=\"\\$${1:items} as \\$${2:item}\">",
+      "\t${0}",
+      "</x-template>"
+    ],
+    "description": "Directive container that renders only its children"
+  },
+  "Tempest slot": {
+    "prefix": "x-slot",
+    "body": ["<x-slot${1: name=\"${2:styles}\"} />"],
+    "description": "Slot outlet inside a view component"
+  },
+  "Tempest dynamic component": {
+    "prefix": "x-component",
+    "body": ["<x-component :is=\"${1:\\$name}\" ${2}/>"],
+    "description": "Renders a view component by name at runtime"
+  }
+}

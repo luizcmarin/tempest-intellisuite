@@ -1,0 +1,130 @@
+# Compares what the Forge generates against what the framework's own `make:*`
+# commands produce, on a fresh Tempest install.
+#
+# The extension deliberately owns its stubs instead of delegating to
+# `tempest make:*` — that is what makes multi-file CRUD and view generation
+# possible. The cost is drift: when the framework changes its idea of what a
+# controller looks like, our templates quietly become dated.
+#
+# This job is the alarm for that. It does not fail the build — a divergence is
+# not necessarily a bug, and blocking unrelated work on it would only teach
+# people to ignore it. It opens an issue instead.
+
+name: Stub conformance
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Create a fresh Tempest project
+        run: composer create-project tempest/app fixture --no-interaction
+
+      - name: Generate with the framework
+        working-directory: fixture
+        run: |
+          php ./tempest make:controller ProbeController --path=/probe --view=probe || true
+          php ./tempest make:model ProbeModel || true
+          php ./tempest make:request ProbeRequest || true
+          php ./tempest make:middleware ProbeMiddleware || true
+          php ./tempest make:command ProbeCommand || true
+
+      - name: Compare against our templates
+        id: compare
+        run: |
+          {
+            echo 'report<<REPORT'
+            php -r '
+              $pairs = [
+                  "controller" => "ProbeController",
+                  "model"      => "ProbeModel",
+                  "request"    => "ProbeRequest",
+                  "middleware" => "ProbeMiddleware",
+                  "console-command" => "ProbeCommand",
+              ];
+
+              foreach ($pairs as $stub => $class) {
+                  $generated = glob("fixture/app/{$class}.php")[0] ?? null;
+
+                  if ($generated === null) {
+                      echo "- `{$stub}`: the framework produced no file for {$class} (command missing or renamed?)\n";
+                      continue;
+                  }
+
+                  $theirs = file_get_contents($generated);
+                  $ours   = file_get_contents("templates/{$stub}.stub");
+
+                  // Compare the imports and the shape, not the names: ours are
+                  // placeholders, and whitespace churn is not interesting.
+                  preg_match_all("/^use (.+);$/m", $theirs, $t);
+                  preg_match_all("/^use (.+);$/m", $ours, $o);
+
+                  $missing = array_diff($t[1], $o[1]);
+                  $extra   = array_diff($o[1], $t[1]);
+
+                  if ($missing || $extra) {
+                      echo "- `{$stub}`:\n";
+                      foreach ($missing as $use) { echo "    - framework imports `{$use}`, we do not\n"; }
+                      foreach ($extra as $use)   { echo "    - we import `{$use}`, the framework does not\n"; }
+                  }
+              }
+            '
+            echo REPORT
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open an issue when they diverge
+        if: steps.compare.outputs.report != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = `${{ steps.compare.outputs.report }}`;
+            const title = 'Forge templates have drifted from the framework stubs';
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'stub-drift',
+            });
+
+            const body = [
+              'The weekly comparison against a fresh Tempest install found differences',
+              'between `templates/*.stub` and what `tempest make:*` now produces.',
+              '',
+              report,
+              '',
+              'This is a signal, not necessarily a bug — review each difference and either',
+              'update the template or note why ours differs on purpose.',
+            ].join('\n');
+
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['stub-drift'],
+              });
+            }

@@ -1,0 +1,71 @@
+{
+  "Tempest GET route": {
+    "prefix": "tempest:get",
+    "body": [
+      "#[Get(uri: '/${1:path}')]",
+      "public function ${2:index}(): View",
+      "{",
+      "\treturn view('./${1:path}.view.php');",
+      "}"
+    ],
+    "description": "Method with a #[Get] route attribute (requires use Tempest\\Router\\Get)"
+  },
+  "Tempest POST route": {
+    "prefix": "tempest:post",
+    "body": [
+      "#[Post(uri: '/${1:path}')]",
+      "public function ${2:store}(${3}): Response",
+      "{",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Method with a #[Post] route attribute (requires use Tempest\\Router\\Post)"
+  },
+  "Tempest console command": {
+    "prefix": "tempest:command",
+    "body": [
+      "#[ConsoleCommand(name: '${1:app}:${2:name}', description: '${3}')]",
+      "public function __invoke(): ExitCode",
+      "{",
+      "\t\\$this->console->success('${4:Done.}');",
+      "",
+      "\treturn ExitCode::SUCCESS;",
+      "}"
+    ],
+    "description": "Invokable console command method (requires Tempest\\Console\\{ConsoleCommand, ExitCode})"
+  },
+  "Tempest scheduled command": {
+    "prefix": "tempest:schedule",
+    "body": [
+      "#[Schedule(Every::${1|MINUTE,QUARTER,HALF_HOUR,HOUR,DAY,WEEK,MONTH|})]",
+      "#[ConsoleCommand(name: '${2:app}:${3:name}')]",
+      "public function __invoke(): void",
+      "{",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Scheduled console command (requires Tempest\\Console\\Schedule + Scheduler\\Every)"
+  },
+  "Tempest migration class": {
+    "prefix": "tempest:migration",
+    "body": [
+      "final class Create${1:Posts}Table implements MigratesUp, MigratesDown",
+      "{",
+      "\tpublic string \\$name = '${2:$CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE}_create_${3:posts}_table';",
+      "",
+      "\tpublic function up(): QueryStatement",
+      "\t{",
+      "\t\treturn new CreateTableStatement('${3:posts}')",
+      "\t\t\t->primary()",
+      "\t\t\t${0}->datetime('created_at');",
+      "\t}",
+      "",
+      "\tpublic function down(): QueryStatement",
+      "\t{",
+      "\t\treturn new DropTableStatement('${3:posts}');",
+      "\t}",
+      "}"
+    ],
+    "description": "Migration implementing MigratesUp and MigratesDown"
+  }
+}
