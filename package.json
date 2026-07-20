@@ -348,10 +348,10 @@
     "publish:marketplace": "bun build.js && vsce publish --no-dependencies"
   },
   "devDependencies": {
-    "@types/node": "^20.14.0",
+    "@types/node": "^26.1.1",
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^3.3.0",
-    "esbuild": "^0.24.0",
-    "typescript": "^5.6.0"
+    "esbuild": "^0.28.1",
+    "typescript": "^7.0.2"
   }
 }
