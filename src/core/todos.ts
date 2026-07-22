@@ -186,8 +186,8 @@ export class TodoScanner {
 					// project that writes `Fixme` is not writing a different tag, and
 					// showing it back differently reads as a transcription error.
 					tag: match[1],
-					// A trailing `*/` or `-->` belongs to the comment, not to the task.
-					text: match[2].replace(/\s*(?:\*\/|-->)\s*$/, '').trim(),
+					// A trailing `*/`, `-->`, or `--!>` belongs to the comment, not to the task.
+					text: match[2].replace(/\s*(?:\*\/|--!?>)\s*$/, '').trim(),
 				});
 			}
 
